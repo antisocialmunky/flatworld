@@ -1,0 +1,19 @@
+{
+  "name": "flatworld",
+  "version": "1.0.0",
+  "description": "Evolution Simulator",
+  "main": "flatworld.js",
+  "scripts": {
+    "test": "sake test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antisocialmunky/flatworld.git"
+  },
+  "author": "David Tai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/antisocialmunky/flatworld/issues"
+  },
+  "homepage": "https://github.com/antisocialmunky/flatworld#readme"
+}

@@ -10,12 +10,15 @@ option '-v', '--verbose',           'enable verbose test logging'
 
 task 'clean', 'clean project', ->
   exec 'rm -rf lib'
+  
+task 'build', 'build project', ['build:js', 'build:static']
 
-task 'build', 'build js', ['build:static'], ->
+task 'build:js', 'build js', ->
   return if (running 'build')
-
+  
   bundle.write
-    entry:   'src/index.coffee'
+    entry:  'src/js/app.coffee'
+    dest:   'public/js/flatworld.js'
     compilers:
       coffee:
         version: 1
@@ -26,25 +29,8 @@ task 'build', 'build js', ['build:static'], ->
   .catch (err) ->
     console.error err
 
-task 'build:web', 'build js', ->
-  bundle.write
-    entry:     'src/index.coffee'
-    external:  false
-    browser:   false
-    details:   true
-    quiet:     false
-    commonjs:  true
-    format:    'web'
-    sourceMap: false
-    compilers:
-      coffee: version: 1
-
-task 'build:min', 'build js for production', ['build', 'build:web'], ->
-  yield exec 'uglifyjs flatworld.js -o flatworld.min.js'
-  yield exec 'cp lib/theme.css theme.css'
-
-task 'build:static', 'build static assets', ->
-  exec 'bebop compile'
+task 'build:min', 'build js for production', ['build:static', 'build:js'], ->
+  yield exec 'uglifyjs public/js/flatworld.js -o public/js/flatworld.min.js'
   
 task 'build:static', 'build static assets', ->
   exec '''

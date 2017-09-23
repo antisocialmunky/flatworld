@@ -1,19 +1,20 @@
 fs    = require 'fs' 
 path  = require 'path' 
 
-debounce = (fn, wait = 100) ->  
-  last = (new Date)  
+debounce = (fn, leadingEdge = true, wait = 100) ->  
+  last = (new Date)
   ->    
     now = new Date    
-  
+    
     # Return if we haven't waited long enough
-    return if (now - last) < wait    
+    return if (now - last) < wait && !leadingEdge
     
+    leadingEdge = false
     last = now    
-    
     fn.apply null, arguments 
   
 writeFile = (dst, content) ->  
+  console.log('writing file', dst)
   fs.writeFile dst, content, 'utf8', (err) ->    
     console.error err if err? 
   
@@ -81,16 +82,19 @@ compileStylus = ->
     #     semanticMerging:   false    
     #   minified = minifier.minify css    
     #   writeFile dst, minified.styles    
-    # else    sourceMapURL = (path.basename dst) + '.map'    
+    # else    
+    sourceMapURL = (path.basename dst) + '.map'    
     css = css + "/*# sourceMappingURL=#{sourceMapURL} */"    
-    writeFile dst, css    
+    writeFile dst, css
     writeFile dst + '.map', JSON.stringify style.sourcemap  
     
   true 
  
- module.exports =  
+module.exports =  
   assetDir: __dirname + '/src'  
   buildDir: __dirname + '/public'  
-  compilers:    coffee: -> false    
-  pug:    debounce compilePug    
-  styl:   debounce compileStylus
+  
+  compilers:    
+    coffee: -> false    
+    pug:    debounce compilePug    
+    styl:   debounce compileStylus

@@ -1,0 +1,70 @@
+use 'sake-bundle'
+use 'sake-outdated'
+use 'sake-publish'
+use 'sake-version'
+
+option '-b', '--browser [browser]', 'browser to use for tests'
+option '-g', '--grep [filter]',     'test filter'
+option '-t', '--test [test]',       'specify test to run'
+option '-v', '--verbose',           'enable verbose test logging'
+
+task 'clean', 'clean project', ->
+  exec 'rm -rf lib'
+
+task 'build', 'build js', ['build:static'], ->
+  return if (running 'build')
+
+  bundle.write
+    entry:   'src/index.coffee'
+    compilers:
+      coffee:
+        version: 1
+    quiet: false
+    details: true
+    external: false
+    commonjs:  true
+  .catch (err) ->
+    console.error err
+
+task 'build:web', 'build js', ->
+  bundle.write
+    entry:     'src/index.coffee'
+    external:  false
+    browser:   false
+    details:   true
+    quiet:     false
+    commonjs:  true
+    format:    'web'
+    sourceMap: false
+    compilers:
+      coffee: version: 1
+
+task 'build:min', 'build js for production', ['build', 'build:web'], ->
+  yield exec 'uglifyjs flatworld.js -o flatworld.min.js'
+  yield exec 'cp lib/theme.css theme.css'
+
+task 'build:static', 'build static assets', ->
+  exec 'bebop compile'
+  
+task 'build:static', 'build static assets', ->
+  exec '''
+    mkdir -p public/css
+    mkdir -p public/js
+    bebop compile'
+  '''
+
+task 'watch', 'watch for changes and rebuild project', ['watch:js', 'watch:static']
+
+task 'watch:js', 'watch js for changes and rebuild', ->
+  build = (filename) ->
+    return if (running 'build')
+    console.log filename, 'modified'
+    invoke 'build:js'
+
+  watch 'src/*',          build
+  watch 'node_modules/*', build
+
+task 'watch:static', 'watch static files and rebuild', ['build:static'], ->
+  exec 'bebop'
+
+

@@ -1,0 +1,41 @@
+#rankings
+  position: fixed
+  top: 0
+  left: 0
+  height: 100vh
+  overflow: auto
+  background-color: $themeBGColor
+  box-shadow: -4px 2px 12px $themeShadowColor
+  opacity: 0.8
+  
+  .content
+    padding: 0 ($themeElementPadding * .5)
+     
+    rankings
+      .ranking
+        margin-top: $themeElementPadding * .5
+        position: relative
+        color: $themeTextColorInverted
+        width: 100px
+        
+        &:last-child
+          margin-bottom: $themeElementPadding * .5
+        
+        .image
+          height: 100px
+          width: 100px
+          background-position: center
+          background-size: cover
+          background-repeat: no-repeat
+          background-color: #000
+          display: block
+          
+        .counter 
+          position: absolute
+          top: $themeElementPadding * .25
+          left: $themeElementPadding * .5
+          
+        .distance
+          position: absolute
+          top: $themeElementPadding * .25
+          right: $themeElementPadding * .5

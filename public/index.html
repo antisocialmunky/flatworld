@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>flatworld v1.0.0
+    </title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css" type="text/css">
+  </head>
+  <body>
+    <input class="hidden-toggle" id="controls-toggle" type="checkbox">
+    <div id="loader">Loading</div>
+    <div id="viewport"></div>
+    <div id="information">
+      <indicators><span>Time: { renderTimer() }</span><span>Generation: { data.get('generation') }</span><span if="{ data.get(&quot;activeOrganism.id&quot;) }">Organism ID: { data.get('activeOrganism.id') }</span><span if="{ data.get(&quot;activeOrganism&quot;) }">Distance: { renderDistance() }</span><span if="{ data.get(&quot;generationBest&quot;) }">Distance: { renderBestDistance() }</span></indicators>
+      <label id="open-controls" for="controls-toggle">CONTROLS</label>
+    </div>
+    <div id="controls">
+      <label id="close-controls" for="controls-toggle">🗙</label>
+      <div class="content">
+        <engine-controls>
+          <div class="seed">SEED: { data.get('seed') }</div>
+          <div class="button" onclick="{ togglePause }">{ isPaused() ? 'START' : 'STOP' }</div>
+          <div class="speed-controls">
+            <div class="slower button" onclick="{ slowDown }">-</div>
+            <div class="speed">{ data.get('speed') }</div>
+            <div class="faster button" onclick="{ speedUp }">+</div>
+          </div>
+        </engine-controls>
+      </div>
+    </div>
+    <div id="rankings">
+      <div class="content">
+        <rankings>
+          <div class="ranking" each="{ ranking, i in data.get(&quot;rankings&quot;) }">
+            <div class="counter">{ ranking.organism.id }</div>
+            <div class="distance">{ ranking.distance.toFixed(2) }m</div><a class="image" style="{ &quot;background-image: url(&quot; + ranking.img + &quot;)&quot; };" href="{ ranking.img }" target="_blank"></a>
+          </div>
+        </rankings>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/synaptic/1.1.2/synaptic.js"></script>
+    <script src="js/flatworld.js"></script>
+  </body>
+</html>

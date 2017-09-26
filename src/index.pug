@@ -1,0 +1,41 @@
+extends _layout.pug
+
+block content
+  input#controls-toggle.hidden-toggle(type='checkbox')
+  
+  #loader Loading
+  
+  #viewport
+  
+  #information
+    indicators
+      span Time: { renderTimer() }
+      span Generation: { data.get('generation') }
+      span(if='{ data.get("activeOrganism.id") }') Organism ID: { data.get('activeOrganism.id') }
+      span(if='{ data.get("activeOrganism") }') Distance: { renderDistance() }
+      span(if='{ data.get("generationBest") }') Distance: { renderBestDistance() }
+    label#open-controls(for='controls-toggle') CONTROLS
+      
+  #controls
+    label#close-controls(for='controls-toggle') 🗙
+    .content
+      engine-controls
+        .seed
+          | SEED: { data.get('seed') }
+        .button(onclick='{ togglePause }')
+          | { isPaused() ? 'START' : 'STOP' }
+        .speed-controls
+          .slower.button(onclick='{ slowDown }') -
+          .speed { data.get('speed') }
+          .faster.button(onclick='{ speedUp }') +
+          
+  #rankings
+    .content
+      rankings
+        .ranking(each='{ ranking, i in data.get("rankings") }')
+          .counter { ranking.organism.id }
+          .distance { ranking.distance.toFixed(2) }m
+          a.image(
+            style='{ "background-image: url(" + ranking.img + ")" }'
+            href='{ ranking.img }'
+            target='_blank')

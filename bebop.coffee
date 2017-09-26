@@ -14,7 +14,6 @@ debounce = (fn, leadingEdge = true, wait = 100) ->
     fn.apply null, arguments 
   
 writeFile = (dst, content) ->  
-  console.log('writing file', dst)
   fs.writeFile dst, content, 'utf8', (err) ->    
     console.error err if err? 
   

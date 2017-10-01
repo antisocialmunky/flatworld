@@ -9,9 +9,8 @@ Layer      = synaptic.Layer
 import Gene       from './gene'
 import PrimeBlock from './primeblock'
 
-_id = 0
-
 export default class Organism
+  @count: 0
   id: 0
   genums: null
   genes: null
@@ -29,7 +28,7 @@ export default class Organism
   
   # take a genums
   constructor: (@genums = [])->
-    @id = _id++
+    @id = Organism.count++
   
     # initialize the PrimeBlock
     @primeBlock = new PrimeBlock()
@@ -64,10 +63,32 @@ export default class Organism
     if !@perceptron?
       return
     
-    inputData = (input.perceptronInput() for input in @inputs)
+    inputData = (input.activationFn() for input in @inputs)
     outputData = @perceptron.activate inputData
     for output, i in @outputs
-      @outputs[i].perceptronOutput outputData[i]
+      @outputs[i].activationFn outputData[i]
+      
+  # calcualte fitness
+  fitness: ()->
+    body = @primeBlock.body
+    position = body.position
+    sx = position.x
+    sy = position.y
+    mass = body.mass
+    
+    for block in @blocks
+      body = block.body
+      position = body.position
+      continue if !position
+      
+      sx += position.x * body.mass
+      sy += position.y * body.mass
+      mass += body.mass
+      
+    sx /= mass
+    sy /= mass
+      
+    return Math.sqrt(sx * sx + sy * sy) / 100
              
   # create and populate genes from genum
   @_compileGenes: (genums)->
@@ -129,15 +150,10 @@ export default class Organism
     outputs = []
     
     for block in blocks
-      if block.neuronInputBias?
-        inputs.push block
-        
-      if block.neuronHiddenBias?
-        hiddens.push block
-        
-      if block.neuronOutputBias?
-        outputs.push block
-    
+      inputs  = inputs.concat  block.inputs
+      hiddens = hiddens.concat block.hiddens
+      outputs = outputs.concat block.outputs
+            
     return [inputs, hiddens, outputs]
     
   @_compilePerceptron: (inputs, hiddens, outputs)->
@@ -145,15 +161,15 @@ export default class Organism
       inputLayer = new Layer inputs.length
       
       for input, i in inputs
-        inputLayer.list[i].bias = input.neuronInputBias()
+        inputLayer.list[i].bias = input.bias
       
       hiddenLayer = new Layer hiddens.length
       for h, i in hiddens
-        hiddenLayer.list[i].bias = h.neuronHiddenBias()
+        hiddenLayer.list[i].bias = h.bias
         
       outputLayer = new Layer outputs.length
       for output, i in outputs
-        outputLayer.list[i].bias = output.neuronOutputBias()
+        outputLayer.list[i].bias = output.bias
 
       inputLayer.project hiddenLayer
       hiddenLayer.project outputLayer

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/app.css" type="text/css">
   </head>
   <body>
-    <input class="hidden-toggle" id="controls-toggle" type="checkbox">
+    <input class="hidden-toggle" id="controls-toggle" type="checkbox" checked>
     <div id="loader">Loading</div>
     <div id="viewport"></div>
     <div id="information">
@@ -28,6 +28,18 @@
             <div class="slower button" onclick="{ slowDown }">-</div>
             <div class="speed">{ data.get('speed') }</div>
             <div class="faster button" onclick="{ speedUp }">+</div>
+          </div>
+          <div class="records"> 
+            <div class="record-header">
+              <div>Gen.</div>
+              <div>Dist.</div>
+              <div>Org.</div>
+            </div>
+            <div class="record" each="{ record, i in data.get(&quot;records&quot;) }">
+              <div>{ record.generation }</div>
+              <div>{ record.distance }m</div>
+              <div>{ record.organism }</div>
+            </div>
           </div>
         </engine-controls>
       </div>

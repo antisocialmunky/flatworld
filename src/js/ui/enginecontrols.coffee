@@ -6,7 +6,11 @@ export default class EngineControls extends El.View
     
   init: ->
     super
-           
+      
+    @data.on 'set', (k, v)=>
+      if k == 'records'
+        @scheduleUpdate()     
+        
   isPaused: ->
     return !!(@data.get 'paused')
     

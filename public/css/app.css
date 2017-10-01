@@ -100,7 +100,7 @@ engine-controls,
 indicators,
 rankings{
   box-sizing:border-box;
-  display:table;
+  display:content;
 }
 engine-controls *,
 indicators *,
@@ -856,7 +856,7 @@ body{
 }
 #controls .content{
   width:100%;
-  display:table;
+  display:block;
   padding:40px 20px;
 }
 #controls .content > *{
@@ -882,6 +882,46 @@ body{
   float:right;
 }
 #controls .speed-controls > *:nth-child(3n + 1){
+  clear:both;
+}
+#controls .records > *{
+  width:100%;
+  word-break:break-all;
+}
+#controls .records > * > *{
+  width:calc(99.9% * 1/2 - (10px - 10px * 1/2));
+}
+#controls .records > * > *:nth-child(1n){
+  float:left;
+  margin-right:10px;
+  clear:none;
+}
+#controls .records > * > *:last-child{
+  margin-right:0;
+}
+#controls .records > * > *:nth-child(2n){
+  margin-right:0;
+  float:right;
+}
+#controls .records > * > *:nth-child(2n + 1){
+  clear:both;
+}
+#controls .records > * > *:last-child{
+  width:calc(99.9% * 1);
+}
+#controls .records > * > *:last-child:nth-child(1n){
+  float:left;
+  margin-right:0;
+  clear:none;
+}
+#controls .records > * > *:last-child:last-child{
+  margin-right:0;
+}
+#controls .records > * > *:last-child:nth-child(1n){
+  margin-right:0;
+  float:right;
+}
+#controls .records > * > *:last-child:nth-child(1n + 1){
   clear:both;
 }
 #controls-toggle:checked ~ #controls{
@@ -925,6 +965,6 @@ body{
 }
 #rankings .content rankings .ranking .distance{
   position:absolute;
-  top:5px;
-  right:10px;
+  bottom:5px;
+  left:10px;
 }/*# sourceMappingURL=app.css.map */

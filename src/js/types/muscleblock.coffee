@@ -1,4 +1,5 @@
 import Matter from 'matter-js'
+import Block  from './block'
 
 import {
   minDistance
@@ -8,15 +9,15 @@ import {
 
 Constraint = Matter.Constraint
 
-export default class MuscleBlock
+export default class MuscleBlock extends Block
   b: 0
-  c: 0
   stiffness: 0
   distance:  0
   
   blockA: null
   blockB: null
   body:   null
+  primeBlock: null
   
   # entension lengths
   length1: 0
@@ -25,20 +26,21 @@ export default class MuscleBlock
   
   lengthRange: 0
   
-  inputBias:  0
-  outputBias: 0
-  
   type: 'muscle-block'
 
   # read the 2 block params b and c as well as vertex blocks (including prime)
-  constructor: (b, c, primeBlock, blocks, constraints)->
+  constructor: (@b, @primeBlock, blocks)->
+    super
+    
     if blocks.length == 0
       return
   
+    b = @b
+    c = (b % Math.floor(Math.pow(10, Math.floor(Math.log10(b))))) * 10 || 0
+    d = (c % Math.floor(Math.pow(10, Math.floor(Math.log10(c))))) * 10 || 0
+  
     @stiffness = b % 1
-    @inputBias = c % 10 - 5
-    @outputBias = b / c % 10 - 5
-    
+        
     numBlocks = blocks.length + 1
     i1 = Math.round(b) % numBlocks
     i2 = Math.round(c) % numBlocks
@@ -46,14 +48,14 @@ export default class MuscleBlock
     if i1 == i2
       i2 = (i2 + 1) %numBlocks
       
-    @blockA = blocks[i1 - 1] ? primeBlock
-    @blockB = blocks[i2 - 1] ? primeBlock
+    @blockA = blocks[i1 - 1] ? @primeBlock
+    @blockB = blocks[i2 - 1] ? @primeBlock
     
     # annotate muscle connections
     @connectMuscle @blockA
     @connectMuscle @blockB
     
-    @length = (b * c * 3) % distanceRange + minDistance
+    @length = b % distanceRange + minDistance
       
     # length 1 is the shorter one
     @length1 = @length * .5
@@ -63,12 +65,12 @@ export default class MuscleBlock
     @body = Constraint.create 
       bodyA: @blockA.body
       pointA: 
-        x: b * 5 % minSize * 2 - minSize
-        y: c * 5 % minSize * 2 - minSize 
+        x: b % minSize - minSize / 2
+        y: (b - c) % minSize - minSize / 2
       bodyB: @blockB.body
       pointB: 
-        x: b * 7 % minSize * 2 - minSize
-        y: c * 7 % minSize * 2 - minSize
+        x: c % minSize - minSize / 2
+        y: (c - d) % minSize - minSize / 2
       stiffness: .9 # @stiffness
       damping: 0.01
       length: @length
@@ -77,23 +79,15 @@ export default class MuscleBlock
         
     @body._parentBlock = @
     
+    @addInput b - c, ()=>
+      return (@length - @length1) / @lengthRange 
+      
+    @addOutput c - d, (percent)=>
+      @length = @body.length = @lengthRange * percent  + @length1
+    
   # annotate muscles to a block
   connectMuscle: (block)->
     if !block._muscles?
       block._muscles = [@]
     else
       block._muscles.push @
-  
-  # send the length
-  perceptronInput: ()->
-    return (@length - @length1) / @lengthRange 
-    
-  # modify the length
-  perceptronOutput: (percent)->
-    @length = @body.length = @lengthRange * percent  + @length1
-  
-  neuronInputBias: ()->
-    return @inputBias
-    
-  neuronOutputBias: ()->
-    return @outputBias

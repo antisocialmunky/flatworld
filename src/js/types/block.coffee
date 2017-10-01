@@ -1,60 +1,21 @@
-import Matter from 'matter-js'
-import {
-  minSize
-  sizeRange
-  minDistance
-  distanceRange
-} from './constants'
+import Neuron from './neuron'
 
-PI  = Math.PI
-TAU = PI * 2
-cos = Math.cos
-sin = Math.sin
-
+# basal block for inheritence
 export default class Block
-  b: 0
-  c: 0
+  inputs:  null
+  hiddens: null
+  outputs: null
   
-  distance: 0
-  angle: 0
-  x: 0
-  y: 0
-  size: 0
-  bias: 0
-  
-  collisions: 0
-  body: null
-  
-  type: 'block'
-  
-  # read the 2 block params b and c as well as the origin and initial angle
-  constructor: (b = 0, c = 0, x = window.innerWidth / 2, y = window.innerHeight / 2, initialAngle = 0)->
-    @b = b
-    @c = c 
-    @bias = c % 10 - 5
+  constructor: ()->
+    @inputs  = []
+    @hiddens = []
+    @outputs = []
     
-    @size = (b * c) % sizeRange + minSize
+  addInput: (bias, fn)->
+    @inputs.push new Neuron(bias, fn)
     
-    @distance = c % distanceRange + minDistance
+  addHidden: (bias)->
+    @hiddens.push new Neuron(bias)
     
-    @angle = (b + initialAngle) % TAU
-    offsetX = @distance * cos @angle
-    offsetY = @distance * sin @angle
-    @x = offsetX + x
-    @y = offsetY + y
-    
-    @body = Matter.Bodies.circle @x, @y, @size, { angle: @angle }
-    
-    @body._parentBlock = @
-       
-  perceptronInput: ()->
-    ret = @collisions
-    @collisions = 0
-    return @collisions
-    
-  neuronInputBias: ()->
-    return @bias
-    
-  # events
-  oncollisionActive: ()->
-    @collisions++
+  addOutput: (bias, fn)->
+    @outputs.push new Neuron(bias, fn)

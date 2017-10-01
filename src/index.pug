@@ -1,7 +1,7 @@
 extends _layout.pug
 
 block content
-  input#controls-toggle.hidden-toggle(type='checkbox')
+  input#controls-toggle.hidden-toggle(type='checkbox', checked)
   
   #loader Loading
   
@@ -28,7 +28,16 @@ block content
           .slower.button(onclick='{ slowDown }') -
           .speed { data.get('speed') }
           .faster.button(onclick='{ speedUp }') +
-          
+        .records 
+          .record-header
+            div Gen.
+            div Dist.
+            div Org.
+          .record(each='{ record, i in data.get("records") }')
+            div { record.generation }
+            div { record.distance }m
+            div { record.organism }
+              
   #rankings
     .content
       rankings

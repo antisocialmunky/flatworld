@@ -1,4 +1,4 @@
-import Block       from './block'
+import BodyBlock   from './bodyblock'
 import MuscleBlock from './muscleblock'
 import ThinkBlock  from './thinkblock'
 import GoBlock     from './goblock'
@@ -6,42 +6,46 @@ import GoBlock     from './goblock'
 export default class Gene
   a: 0
   b: 0
-  c: 0
+  sequence: null
     
-  # take a, the block type, b, and c (the two block params)
-  constructor: (@a = 0, @b = 0, @c = 0) ->
+  # take a, the block type, b block parameter
+  constructor: (@a = 0, @b = 0, @sequence = []) ->
     
   # position blocks relative to primeBlock, convert gene to corresponding block
-  _toBlock: (primeBlock)->
-    primeBody = primeBlock.body
-    return new Block @b, @c, primeBody.position.x, primeBody.position.y, primeBody.angle
+  _toBodyBlock: (primeBlock)->
+    return new BodyBlock @b, primeBlock
   
   # position blocks relative to primeBlock, convert gene to corresponding block
   _toThinkBlock: (primeBlock)->
-    primeBody = primeBlock.body
-    return new ThinkBlock @b, @c, primeBody.position.x, primeBody.position.y, primeBody.angle
+    return new ThinkBlock @b, primeBlock
   
   # position blocks relative to primeBlock, convert gene to corresponding block
   _toGoBlock: (primeBlock)->
-    primeBody = primeBlock.body
-    return new GoBlock @b, @c, primeBody.position.x, primeBody.position.y, primeBody.angle
+    return new GoBlock @b, primeBlock
     
   # connect two blocks
   _toMuscleBlock: (primeBlock, blocks)->
-    return new MuscleBlock @b, @c, primeBlock, blocks
+    return new MuscleBlock @b, primeBlock, blocks
     
   # read int[] to generate a Gene[]
   @toGenes: (genums = [])->
     genes = []
     gene = []
     
-    count = 0
-    for genum in genums 
-      gene.push genum
-      
-      if gene.length == 3
+    i = 0
+    while i < genums.length 
+      if genums[i] < 18
+        gene = [genums[i], 1, [genums[i]]]
         genes.push gene
-        gene = []
+      else if gene.length > 0
+        if i % 2 == 0
+          gene[1] *= (genums[i] - 17)
+        else
+          gene[1] /= (genums[i] - 17)
+          
+        gene[2].push genums[i]
+      
+      i++
           
     return genes.map (gene)->
       return new Gene gene[0], gene[1], gene[2]
@@ -53,14 +57,12 @@ export default class Gene
     
     # vertexblocks
     for gene in genes
-      choice = Math.round(gene.a) % 12
-      switch choice
-        when 0, 1
-          blocks.push gene._toBlock primeBlock
-        when 2, 3
-          blocks.push gene._toThinkBlock primeBlock
-        when 4, 5
-          blocks.push gene._toGoBlock primeBlock
+      if gene.a < 4
+        blocks.push gene._toBodyBlock primeBlock
+      else if gene.a < 8
+        blocks.push gene._toThinkBlock primeBlock
+      else if gene.a < 12
+        blocks.push gene._toGoBlock primeBlock
           
     # ... good luck ...
     if blocks.length == 0
@@ -68,10 +70,8 @@ export default class Gene
         
     # muscleblocks
     for gene in genes
-      choice = Math.round(gene.a) % 12
-      switch choice
-        when 6, 7, 8, 9, 10, 11
-          muscles.push gene._toMuscleBlock primeBlock, blocks
+      if gene.a > 11 && gene.a < 18
+        muscles.push gene._toMuscleBlock primeBlock, blocks
           
     # 233940816 gives interesting results with this and 40 elements
     # vertexblocks

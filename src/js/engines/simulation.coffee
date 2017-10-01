@@ -1,6 +1,10 @@
 import Matter   from 'matter-js'
 import Stats    from 'stats.js'
 import Organism from '../types/organism'
+import store    from 'akasha'
+
+# get rid of this
+import GenumsFactory from '../types/genumsfactory'
 
 Body   = Matter.Body
 Bodies = Matter.Bodies
@@ -25,6 +29,7 @@ export default class Simulation
   activeOrganism: null
   
   rankings: null
+  records:  null
   
   autoStart: false
   started: false
@@ -33,6 +38,7 @@ export default class Simulation
   # @data paused
   # @data rankings
   # @data generation
+  # @data records
    
   constructor: (@data, @genumsFactory, @autoStart = false)->
     # window size:
@@ -85,20 +91,23 @@ export default class Simulation
             
     # organisms
     @rankings = []
+    @records = []
     @organisms = []
       
     # set up @data
     @data.set 'speed', 1
     @data.set 'paused', false
     @data.set 'rankings', @rankings
-    @data.set 'generation', 1
+    if !@data.get 'generation'
+      @data.set 'generation', 1 
+    @data.set 'records', @records
     
-    @lastExecution = new Date()
+    @lastExecution = 0
     
     Events.on @engine, 'beforeUpdate', =>
       stats.begin()
       
-    Events.on @engine, 'afterUpdate', =>
+    Events.on @engine, 'afterUpdate', (e)=>
       stats.end()
             
       if @activeOrganism
@@ -106,7 +115,7 @@ export default class Simulation
           x: 300
           y: 300
         
-      @scheduleThinkTime()
+      @scheduleThinkTime(e)
       
     Events.on @engine, 'collisionActive', (e)=>
       for pair in e.pairs
@@ -119,6 +128,34 @@ export default class Simulation
     
     if @autoStart && @organisms.length == 1
       @start()
+  
+  # save the world state
+  saveWorld: ()->
+    store.set 'generation', @data.get('generation')
+    store.set 'seed', @data.get('seed')
+    store.set 'rands', @genumsFactory.rands
+    store.set 'organismCount', Organism.count
+  
+    genums = []
+    for organism in @organisms
+      genums.push GenumsFactory.encode(organism.genums)
+      
+    store.set 'genums', genums
+    
+  # restore the world state
+  restoreWorld: ()->
+    @data.set 'generation', store.get('generation')
+    @data.get 'seed', store.get('seed')
+    @genumsFactory = new GenumsFactory @data
+    
+    @genumsFactory.rands = store.get 'rands'
+    @genumsFactory.mt.discard @genumsFactory.rands
+    
+    @genums = store.get 'genums'
+    Organism.count = store.get('organismCount') - @genums.length
+   
+    for g in @genums 
+      @addOrganism new Organism(GenumsFactory.decode(g))
         
   start: ()->
     if @organisms.length == 0
@@ -129,10 +166,11 @@ export default class Simulation
     @activeOrganism = @organisms[i]
     @data.set 'activeOrganism', @activeOrganism
     
-    @_testOrganism @activeOrganism   
-        
+    @saveWorld()
+    @_testOrganism @activeOrganism
+    
     Events.on @engine, 'afterUpdate', (e)=>
-      date = Math.floor e.timestamp
+      date = e.timestamp
       @data.set 'stopwatchNow', date
       
       oldDate = @data.get 'stopwatchStart'
@@ -143,15 +181,10 @@ export default class Simulation
         #  i++
         
         # record data
-        x = @activeOrganism.primeBlock.body.position.x
-        y = @activeOrganism.primeBlock.body.position.y
-  
-        distance = Math.sqrt(x * x + y * y) / 100
-        
         ranking =
           organism: @activeOrganism
           img:      @render.canvas.toDataURL()
-          distance: distance
+          distance: parseFloat @activeOrganism.fitness().toFixed(8)
         
         added = false
         for r, j in @rankings
@@ -175,8 +208,17 @@ export default class Simulation
           @_testOrganism @activeOrganism, e
         # test another organism
         else
+          generation = @data.get 'generation'
+          
+          @records.unshift
+            generation: generation
+            distance:   @rankings[0].distance
+            organism:   GenumsFactory.encode @rankings[0].organism.genums
+            
+          @data.set 'records', @records
+          
           i = 0
-          @data.set 'generation', @data.get('generation') + 1
+          @data.set 'generation', generation + 1
           count = Math.floor(@organisms.length / 2) - 1
           
           @organisms.length = 0
@@ -190,8 +232,14 @@ export default class Simulation
             @organisms.push organism
           
           @activeOrganism = @organisms[i]
+          
+          @rankings.length = 0
+          @data.set 'rankings', @rankings          
         
         @data.set 'activeOrganism', @activeOrganism
+        
+        @saveWorld()
+        @_testOrganism @activeOrganism, e
         
     cyclesTodo = 0
     # run the render
@@ -227,14 +275,13 @@ export default class Simulation
     World.clear @engine.world, true
     bodies = organism.getBodies()
     World.add @engine.world, bodies
-    @data.set 'stopwatchStart', Math.floor(e?.timestamp ? 0)
+    @data.set 'stopwatchStart', e?.timestamp ? 0
               
   # schedule organism thinking
-  scheduleThinkTime: (time)->
+  scheduleThinkTime: (e)->
     if !@activeOrganism
       return
-      
-    time = new Date()
-    if time - @lastExecution > 1000
-      @lastExecution = time
+    
+    if e.timestamp - @lastExecution > 100
+      @lastExecution = e.timestamp
       @activeOrganism.think()

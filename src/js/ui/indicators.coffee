@@ -20,17 +20,14 @@ export default class Indicators extends El.View
     if !startTime? || !currentTime?
       return 'N/A'
       
-    return moment(currentTime - startTime).format 'mm:ss:SS'
+    return moment(Math.round(currentTime - startTime)).format 'mm:ss:SS'
   
   renderDistance: ()->
     organism = @data.get 'activeOrganism'
     
     if !organism
       return ''
-      
-    x = organism.primeBlock.body.position.x
-    y = organism.primeBlock.body.position.y
-    
-    return '' + (Math.sqrt(x * x + y * y) / 100).toFixed(2) + 'm'
+         
+    return organism.fitness().toFixed(2) + 'm'
             
 Indicators.register()

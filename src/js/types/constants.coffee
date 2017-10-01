@@ -1,4 +1,4 @@
-export minSize = 8
+export minSize = 12
 export maxSize = 24
 
 export sizeRange = maxSize - minSize

@@ -1,11 +1,12 @@
 import Matter from 'matter-js'
+import Block  from './block'
 
 Bodies = Matter.Bodies
 Body   = Matter.Body
 
 TAU = Math.PI * 2
 
-export default class PrimeBlock
+export default class PrimeBlock extends Block
   @x: 0
   @y: 0
   @angle: 0
@@ -20,11 +21,11 @@ export default class PrimeBlock
     @y = 0, 
     @angle = (Math.random() * 1000) % TAU
   )-> 
-    @body = Matter.Bodies.circle @x, @y, 20, 
+    super
+    
+    @body = Matter.Bodies.circle @x, @y, 24, 
       angle: @angle
       
     @body._parentBlock = @
-      
-  # the prime block, gives an alternating clock wave for perceptron input
-  neuronHiddenBias: ()->
-    return 0
+  
+    @addHidden 0

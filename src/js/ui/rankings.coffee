@@ -10,5 +10,8 @@ export default class Rankings extends El.View
     @data.on 'set', (k, v)=>
       if k == 'rankings'
         @scheduleUpdate()
+        
+  viewOrganism: (organism)->
+    window.open 
     
 Rankings.register()

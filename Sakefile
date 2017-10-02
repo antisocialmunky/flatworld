@@ -41,6 +41,38 @@ task 'build:static', 'build static assets', ->
     bebop compile'
   '''
 
+task 'build:test', 'build project', ->
+  yield bundle.write
+    entry:  'src/js/cjs.coffee'
+    dest:   'test/lib/types.js'
+    format: 'cjs'
+  
+task 'test', 'Run tests', ['build:test'], (opts) ->
+  bail     = opts.bail     ? true
+  grep     = opts.grep     ? ''
+  test     = opts.test     ? 'test test/types'
+  verbose  = opts.verbose  ? ''
+
+  bail    = '--bail' if bail
+  grep    = "--grep #{opts.grep}" if grep
+  verbose = 'DEBUG=nightmare VERBOSE=true' if verbose
+
+  bin = 'mocha'
+
+  {status} = yield exec.interactive "NODE_ENV=test #{verbose}
+    #{bin}
+    --colors
+    --reporter spec
+    --timeout 10000000
+    --compilers coffee:coffee-script/register
+    --require co-mocha
+    --require postmortem/register
+    #{bail}
+    #{grep}
+    #{test}"
+        
+  process.exit status
+
 task 'watch', 'watch for changes and rebuild project', ['watch:js', 'watch:static']
 
 task 'watch:js', 'watch js for changes and rebuild', ->

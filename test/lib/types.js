@@ -822,16 +822,16 @@ var SparseList = (function() {
     var found, i, kI, ref;
     ref = this._getKeyIndex(searchKey), kI = ref[0], found = ref[1];
     if (found) {
-      i = this.keys[this.kI];
+      i = this.keys[kI];
       if (x != null) {
         return this.list[i] = x;
       } else {
+        delete this.list['' + i];
         this.keys.splice(kI, 1);
-        delete this.list[i];
         return x;
       }
     }
-    if (x == null) {
+    if (x === void 0) {
       return x;
     }
     if (kI < 0) {
@@ -841,6 +841,10 @@ var SparseList = (function() {
     }
     this.list[searchKey] = x;
     return x;
+  };
+
+  SparseList.prototype["delete"] = function(searchKey) {
+    return this.set(searchKey, void 0);
   };
 
   SparseList.prototype.get = function(searchKey) {
@@ -872,11 +876,9 @@ var SparseList = (function() {
         insertIndex = (ref2 = (minIndex + maxIndex) / 2) != null ? ref2 : 0;
         currentIndex = Math.floor(insertIndex);
       } else {
-        console.log('Found ', searchKey, '@', currentIndex);
         return [currentIndex, true];
       }
     }
-    console.log('Not found ', searchKey, '@', currentIndex);
     return [Math.ceil(insertIndex), false];
   };
 

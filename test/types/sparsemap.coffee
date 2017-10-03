@@ -65,3 +65,72 @@ describe 'SparseList', ->
       
     expect(list.keys).to.deep.eq [-2, -1, 0, 2, 3]
     
+  it 'should set existing values', ->
+    list = new SparseList()
+    list.set -1, 'A'
+    list.set  3, 'B'
+    list.set  0, 'C'
+    list.set  2, 'D'
+    list.set -2, 'E'
+    list.set  0, 'Z'
+    
+    expect(list.list).to.deep.eq
+      '-1': 'A'
+      '3' : 'B'
+      '0' : 'Z'
+      '2' : 'D'
+      '-2': 'E'
+      
+    expect(list.keys).to.deep.eq [-2, -1, 0, 2, 3]
+    
+  it 'should set undefined values correctly', ->
+    list = new SparseList()
+    list.set -1, 'A'
+    list.set  3, 'B'
+    list.set  0, 'C'
+    list.set  2, 'D'
+    list.set -2, 'E'
+    
+    list.set -2, undefined
+    
+    expect(list.list).to.deep.eq
+      '-1': 'A'
+      '3' : 'B'
+      '0' : 'C'
+      '2' : 'D'
+      
+    expect(list.keys).to.deep.eq [-1, 0, 2, 3]
+    
+  it 'should delete values correctly', ->
+    list = new SparseList()
+    list.set -1, 'A'
+    list.set  3, 'B'
+    list.set  0, 'C'
+    list.set  2, 'D'
+    list.set -2, 'E'
+    
+    list.delete 2
+    
+    expect(list.list).to.deep.eq
+      '-1': 'A'
+      '3' : 'B'
+      '0' : 'C'
+      '-2': 'E'
+      
+    expect(list.keys).to.deep.eq [-2, -1, 0, 3]
+    
+  it 'should get values correctly', ->
+    list = new SparseList()
+    list.set  0, 'Q'
+    
+    q = list.get 0
+    
+    expect(q).to.eq 'Q'
+    
+  it 'should get undefined values correctly', ->
+    list = new SparseList()
+    list.set  0, 'Q'
+    
+    q = list.get 1
+    
+    expect(q).to.not.exist

@@ -18,18 +18,18 @@ export class SparseList
     
     # if found
     if found
-      i = @keys[@kI]
+      i = @keys[kI]
       if x?
         return @list[i] = x
       else
+        delete @list['' + i]
         @keys.splice kI, 1
-        delete @list[i]
         
         return x
     
     # if not found
-    
-    if !x?
+        
+    if x == undefined
       return x
       
     # hendle special case of inserting before 0
@@ -41,6 +41,9 @@ export class SparseList
     @list[searchKey] = x
     
     return x
+    
+  delete: (searchKey)->
+    @set searchKey, undefined
       
   # search for a specific element and return
   get: (searchKey) ->
@@ -75,9 +78,9 @@ export class SparseList
         insertIndex  = (minIndex + maxIndex) / 2 ? 0
         currentIndex = Math.floor(insertIndex)
       else
-        console.log 'Found ', searchKey, '@', currentIndex
+        #console.log 'Found ', searchKey, '@', currentIndex
         return [currentIndex, true]
-    console.log 'Not found ', searchKey, '@', currentIndex
+    #console.log 'Not found ', searchKey, '@', currentIndex
     return [Math.ceil(insertIndex), false]
     
   map: ()->

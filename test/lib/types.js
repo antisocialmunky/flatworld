@@ -856,6 +856,15 @@ var SparseList = (function() {
     return this.list[this.keys[kI]];
   };
 
+  SparseList.prototype._getForMap = function(searchKey) {
+    var found, kI, ref;
+    ref = this._getKeyIndex(searchKey), kI = ref[0], found = ref[1];
+    if (!found) {
+      return null;
+    }
+    return this.list[this.keys[kI]];
+  };
+
   SparseList.prototype._getKeyIndex = function(searchKey) {
     var currentIndex, currentKey, insertIndex, keys, maxIndex, minIndex, ref, ref1, ref2, shiftRight;
     keys = this.keys;
@@ -882,7 +891,27 @@ var SparseList = (function() {
     return [Math.ceil(insertIndex), false];
   };
 
-  SparseList.prototype.map = function() {};
+  SparseList.prototype.toArray = function(def) {
+    var arr, i, j, keys, list, offset, ref, ref1;
+    if (def == null) {
+      def = 0;
+    }
+    if (this.keys.length === 0) {
+      return [[], 0];
+    }
+    keys = this.keys;
+    list = this.list;
+    arr = [];
+    offset = keys[0];
+    for (i = j = ref = offset, ref1 = keys[keys.length - 1]; ref <= ref1 ? j <= ref1 : j >= ref1; i = ref <= ref1 ? ++j : --j) {
+      if (list[i] != null) {
+        arr.push(list[i]);
+      } else {
+        arr.push(def);
+      }
+    }
+    return [arr, offset];
+  };
 
   return SparseList;
 
@@ -892,8 +921,84 @@ var SparseMap$1 = SparseMap = (function(superClass) {
   extend$5(SparseMap, superClass);
 
   function SparseMap() {
-    SparseMap.__super__.constructor.apply(this, arguments);
+    SparseMap.__super__.constructor.call(this);
   }
+
+  SparseMap.prototype.set = function(searchKey1, searchKey2, x) {
+    var list;
+    list = this._getForMap(searchKey1);
+    if (list != null) {
+      return list.set(searchKey2, x);
+    }
+    list = new SparseList();
+    list.set(searchKey2, x);
+    SparseMap.__super__.set.call(this, searchKey1, list);
+    return x;
+  };
+
+  SparseMap.prototype.get = function(searchKey1, searchKey2) {
+    var list;
+    list = SparseMap.__super__.get.call(this, searchKey1);
+    if (list != null) {
+      return list.get(searchKey2);
+    }
+    return void 0;
+  };
+
+  SparseMap.prototype["delete"] = function(searchKey1, searchKey2) {
+    return this.set(searchKey1, searchKey2, void 0);
+  };
+
+  SparseMap.prototype.toMatrix = function(def) {
+    var arr, ars, fn, i, j, k, keys, l, len, len1, list, mat, maxY, offsetX, offsetY, ref, ref1;
+    if (def == null) {
+      def = 0;
+    }
+    if (this.keys.length === 0) {
+      return [[], 0, 0];
+    }
+    keys = this.keys;
+    list = this.list;
+    ars = [];
+    mat = [];
+    offsetX = keys[0];
+    offsetY = void 0;
+    maxY = 0;
+    for (i = j = ref = offsetX, ref1 = keys[keys.length - 1]; ref <= ref1 ? j <= ref1 : j >= ref1; i = ref <= ref1 ? ++j : --j) {
+      if (list[i] != null) {
+        ars.push(list[i].toArray(def));
+      } else {
+        ars.push([[], 0]);
+      }
+    }
+    for (k = 0, len = ars.length; k < len; k++) {
+      arr = ars[k];
+      if (offsetY == null) {
+        offsetY = arr[1];
+      } else if (arr[1] < offsetY) {
+        offsetY = arr[1];
+      }
+      if (offsetY + arr[0].length > maxY) {
+        maxY = offsetY + arr[0].length;
+      }
+    }
+    fn = function(arr) {
+      var ar, m, n, ref2, ref3;
+      ar = arr[0];
+      for (i = m = 1, ref2 = arr[1] - offsetY; m <= ref2; i = m += 1) {
+        ar.unshift(def);
+      }
+      for (i = n = -1, ref3 = maxY - arr[0].length - offsetY; n <= ref3; i = n += 1) {
+        ar.push(def);
+      }
+      return mat.push(ar);
+    };
+    for (l = 0, len1 = ars.length; l < len1; l++) {
+      arr = ars[l];
+      fn(arr);
+    }
+    return [mat, offsetX, offsetY != null ? offsetY : 0];
+  };
 
   return SparseMap;
 
